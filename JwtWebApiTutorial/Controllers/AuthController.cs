@@ -1,5 +1,7 @@
 ﻿using JwtWebApiTutorial.Models;
 using JwtWebApiTutorial.Models.Dtos;
+using JwtWebApiTutorial.Services.UserService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -16,10 +18,12 @@ namespace JwtWebApiTutorial.Controllers
     {
         private static User user = new User();
         private readonly IConfiguration _configuration;
+        private readonly IUserService _userService;
 
-        public AuthController(IConfiguration configuration)
+        public AuthController(IConfiguration configuration, IUserService userService)
         {
             _configuration = configuration;
+            _userService = userService;
         }
 
         [HttpPost("register")]
@@ -48,6 +52,13 @@ namespace JwtWebApiTutorial.Controllers
 
             string token = CreateToken(user);
             return Ok(token);
+        }
+
+        [HttpGet("username"), Authorize]
+        public async Task<ActionResult<string>> GetUserName()
+        {
+            var userName = _userService.GetUserName();
+            return Ok(userName);
         }
 
         private void GetPasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
